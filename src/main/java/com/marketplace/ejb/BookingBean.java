@@ -3,6 +3,7 @@ package com.marketplace.ejb;
 import com.marketplace.entities.Booking;
 import com.marketplace.entities.Notification;
 import com.marketplace.entities.User;
+import com.marketplace.rabbitmq.RabbitMQProducer;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.persistence.EntityManager;
@@ -33,6 +34,8 @@ public class BookingBean {
         if (customer.getWalletBalance() < amount) {
             // Save rejection notification
             saveNotification(customerId, "Booking rejected: Insufficient balance", "BOOKING_REJECTED");
+            // Send RabbitMQ rejection message
+            RabbitMQProducer.sendBookingRejection(customerId, "Booking rejected: Insufficient balance");
             throw new RuntimeException("Insufficient balance");
         }
 
@@ -58,6 +61,12 @@ public class BookingBean {
         saveNotification(providerId,
                 "New booking received from " + customer.getUsername() +
                         " for $" + amount, "BOOKING_CONFIRMED");
+
+        // Send RabbitMQ confirmation messages
+        RabbitMQProducer.sendBookingConfirmation(customerId,
+                "Booking confirmed! Service booked for $" + amount);
+        RabbitMQProducer.sendBookingConfirmation(providerId,
+                "New booking received from " + customer.getUsername() + " for $" + amount);
 
         return booking;
     }
