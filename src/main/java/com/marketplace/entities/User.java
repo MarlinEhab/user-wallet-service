@@ -10,37 +10,84 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
+    @Column(unique = true, nullable = false)
     private String username;
 
     @Column(nullable = false)
     private String password;
 
+    /*
+     * Roles:
+     * CUSTOMER
+     * PROVIDER
+     * ADMIN
+     */
     @Column(nullable = false)
-    private String role; // CUSTOMER, PROVIDER, ADMIN
+    private String role;
 
-    @Column
-    private String professionType; // only for PROVIDER (e.g., Plumber, Carpenter)
+    /*
+     * Only used for service providers.
+     * Example: Plumber, Carpenter, Electrician.
+     */
+    private String professionType;
 
-    @Column
-    private Double walletBalance; // only for CUSTOMER
+    /*
+     * Only mainly used for customers.
+     */
+    private Double walletBalance;
 
-    // Getters and Setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public User() {
+    }
 
-    public String getUsername() { return username; }
-    public void setUsername(String username) { this.username = username; }
+    public User(String username, String password, String role, String professionType, Double walletBalance) {
+        this.username = username;
+        this.password = password;
+        this.role = role;
+        this.professionType = professionType;
+        this.walletBalance = walletBalance;
+    }
 
-    public String getPassword() { return password; }
-    public void setPassword(String password) { this.password = password; }
+    public Long getId() {
+        return id;
+    }
 
-    public String getRole() { return role; }
-    public void setRole(String role) { this.role = role; }
+    public String getUsername() {
+        return username;
+    }
 
-    public String getProfessionType() { return professionType; }
-    public void setProfessionType(String professionType) { this.professionType = professionType; }
+    public void setUsername(String username) {
+        this.username = username;
+    }
 
-    public Double getWalletBalance() { return walletBalance; }
-    public void setWalletBalance(Double walletBalance) { this.walletBalance = walletBalance; }
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
+    
+    public String getProfessionType() {
+        return professionType;
+    }
+
+    public void setProfessionType(String professionType) {
+        this.professionType = professionType;
+    }
+
+    public Double getWalletBalance() {
+        return walletBalance;
+    }
+
+    public void setWalletBalance(Double walletBalance) {
+        this.walletBalance = walletBalance;
+    }
 }

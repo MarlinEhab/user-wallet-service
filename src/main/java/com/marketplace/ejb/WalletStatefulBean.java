@@ -15,73 +15,127 @@ public class WalletStatefulBean {
     private Long currentUserId;
     private Double sessionStartBalance;
 
-    // Initialize session for a user
     public void initSession(Long userId) {
-        this.currentUserId = userId;
         User user = em.find(User.class, userId);
+
         if (user == null) {
             throw new RuntimeException("User not found");
         }
+
+        if (!"CUSTOMER".equalsIgnoreCase(user.getRole())) {
+            throw new RuntimeException("Wallet operations are only allowed for customers");
+        }
+
+        this.currentUserId = userId;
         this.sessionStartBalance = user.getWalletBalance();
     }
 
-    // Get current balance
     public Double getBalance() {
+        validateSession();
+
         User user = em.find(User.class, currentUserId);
+
         if (user == null) {
             throw new RuntimeException("User not found");
         }
+
         return user.getWalletBalance();
     }
 
-    // Add funds to wallet
     public Double addFunds(double amount) {
+        validateSession();
+
         if (amount <= 0) {
             throw new RuntimeException("Amount must be greater than zero");
         }
+
         User user = em.find(User.class, currentUserId);
+
         if (user == null) {
             throw new RuntimeException("User not found");
         }
+
         user.setWalletBalance(user.getWalletBalance() + amount);
         em.merge(user);
+
         return user.getWalletBalance();
     }
 
-    // Deduct funds from wallet
     public Double deductFunds(double amount) {
+        validateSession();
+
         if (amount <= 0) {
             throw new RuntimeException("Amount must be greater than zero");
         }
+
         User user = em.find(User.class, currentUserId);
+
         if (user == null) {
             throw new RuntimeException("User not found");
         }
+
         if (user.getWalletBalance() < amount) {
             throw new RuntimeException("Insufficient balance");
         }
+
         user.setWalletBalance(user.getWalletBalance() - amount);
         em.merge(user);
+
         return user.getWalletBalance();
     }
 
-    // Rollback to session start balance
-    public void rollback() {
+    public Double refundFunds(double amount) {
+        validateSession();
+
+        if (amount <= 0) {
+            throw new RuntimeException("Amount must be greater than zero");
+        }
+
         User user = em.find(User.class, currentUserId);
+
+        if (user == null) {
+            throw new RuntimeException("User not found");
+        }
+
+        user.setWalletBalance(user.getWalletBalance() + amount);
+        em.merge(user);
+
+        return user.getWalletBalance();
+    }
+
+    public boolean hasSufficientBalance(double amount) {
+        validateSession();
+
+        if (amount <= 0) {
+            throw new RuntimeException("Amount must be greater than zero");
+        }
+
+        User user = em.find(User.class, currentUserId);
+
+        if (user == null) {
+            throw new RuntimeException("User not found");
+        }
+
+        return user.getWalletBalance() >= amount;
+    }
+
+    public void rollback() {
+        validateSession();
+
+        User user = em.find(User.class, currentUserId);
+
         if (user != null && sessionStartBalance != null) {
             user.setWalletBalance(sessionStartBalance);
             em.merge(user);
         }
     }
 
-    // Check if balance is sufficient
-    public boolean hasSufficientBalance(double amount) {
-        User user = em.find(User.class, currentUserId);
-        if (user == null) return false;
-        return user.getWalletBalance() >= amount;
+    private void validateSession() {
+        if (currentUserId == null) {
+            throw new RuntimeException("Wallet session has not been initialized");
+        }
     }
 
-    // End session
     @Remove
     public void endSession() {
         currentUserId = null;
