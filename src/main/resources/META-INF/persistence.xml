@@ -10,6 +10,10 @@
         <jta-data-source>java:/jdbc/UserWalletDS</jta-data-source>
 
         <class>com.marketplace.entities.User</class>
+        <class>com.marketplace.entities.Booking</class>
+        <class>com.marketplace.entities.Notification</class>
+        <class>com.marketplace.entities.ServiceCategory</class>
+        <class>com.marketplace.entities.ServiceOffer</class>
 
         <properties>
             <property name="jakarta.persistence.schema-generation.database.action" value="update"/>
